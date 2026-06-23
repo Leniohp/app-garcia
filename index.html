@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Garcia Agro — Monitoramento RJ</title>
+<meta name="theme-color" content="#1D6E3C">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/favicon-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Garcia Agro">
+<style>
+  :root{
+    --verde:#1D6E3C; --verde2:#2E8B4F; --folha:#8DC63F;
+    --bg:#f4f6f0; --card:#ffffff; --linha:#d8e0d2;
+    --txt:#173404; --txt2:#5F6B5A; --txt3:#8a9382;
+    --chip:#EAF3DE; --chip-ic:#3B6D11;
+  }
+  *{box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; background:var(--bg); color:var(--txt); overflow-x:hidden;}
+
+  /* ===== TELA INICIAL ===== */
+  .topo{background:var(--verde); padding:calc(env(safe-area-inset-top) + 18px) 18px 20px; color:#fff;}
+  .topo-row{display:flex; align-items:center; gap:11px; max-width:560px; margin:0 auto;}
+  .logo{width:42px; height:42px; border-radius:11px; background:var(--verde2); display:flex; align-items:center; justify-content:center; position:relative; flex-shrink:0;}
+  .logo b{font-size:24px; font-weight:700; color:#fff;}
+  .logo .lf{position:absolute; right:5px; bottom:6px; width:11px; height:16px; background:var(--folha); border-radius:0 80% 0 80%; transform:rotate(35deg);}
+  .topo h1{font-size:16px; font-weight:600; line-height:1.2;}
+  .topo .s{font-size:11px; color:#B7DCC2; line-height:1.3;}
+
+  .saudacao{max-width:560px; margin:18px auto 6px; padding:0 18px;}
+  .saudacao h2{font-size:17px; font-weight:600; color:var(--txt);}
+  .saudacao p{font-size:12px; color:var(--txt2); margin-top:2px;}
+
+  .grade{max-width:560px; margin:0 auto; padding:10px 14px 24px; display:grid; grid-template-columns:repeat(2,1fr); gap:13px;}
+  .mod{background:var(--card); border:0.5px solid var(--linha); border-radius:16px; padding:16px 13px; display:flex; flex-direction:column; gap:9px; min-height:128px; cursor:pointer; transition:transform .12s, box-shadow .12s; text-align:left; font-family:inherit; color:inherit;}
+  .mod:active{transform:scale(.97);}
+  .mod .ic{width:42px; height:42px; border-radius:12px; background:var(--chip); display:flex; align-items:center; justify-content:center;}
+  .mod .ic svg{width:23px; height:23px; stroke:var(--chip-ic);}
+  .mod .nm{font-size:13.5px; font-weight:600; line-height:1.25;}
+  .mod .ds{font-size:11px; color:var(--txt2); line-height:1.3;}
+  .mod .tag{font-size:9.5px; color:var(--txt3); margin-top:auto; display:inline-flex; align-items:center; gap:4px;}
+  .mod.pronto .tag{color:var(--chip-ic);}
+
+  .rodape{max-width:560px; margin:0 auto; padding:4px 18px calc(env(safe-area-inset-bottom) + 22px); }
+  .rodape .l{border-top:0.5px solid var(--linha); padding-top:12px; display:flex; align-items:center; justify-content:center; gap:6px; font-size:10px; color:var(--txt3);}
+
+  /* ===== VISUALIZADOR DE MÓDULO (iframe) ===== */
+  .visor{position:fixed; inset:0; background:var(--bg); display:flex; flex-direction:column; transform:translateX(100%); transition:transform .26s ease; z-index:50;}
+  .visor.aberto{transform:translateX(0);}
+  .visor-topo{background:var(--verde); color:#fff; display:flex; align-items:center; gap:6px; padding:calc(env(safe-area-inset-top) + 12px) 14px 12px;}
+  .voltar{background:transparent; border:0; color:#fff; font-size:15px; font-weight:500; display:flex; align-items:center; gap:4px; cursor:pointer; padding:6px 4px; font-family:inherit;}
+  .voltar svg{width:20px; height:20px; stroke:#fff;}
+  .visor-titulo{font-size:15px; font-weight:600;}
+  .visor-acao{margin-left:auto;}
+  .visor-acao a{color:#B7DCC2; font-size:12px; text-decoration:none; display:inline-flex; align-items:center; gap:4px;}
+  .visor-acao svg{width:14px; height:14px; stroke:currentColor;}
+  .visor iframe{flex:1; border:0; width:100%; background:#0f1115;}
+
+  /* placeholder "em construção" */
+  .obra{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:30px; gap:14px;}
+  .obra .big{width:64px; height:64px; border-radius:18px; background:var(--chip); display:flex; align-items:center; justify-content:center;}
+  .obra .big svg{width:32px; height:32px; stroke:var(--chip-ic);}
+  .obra h3{font-size:17px; font-weight:600; color:var(--txt);}
+  .obra p{font-size:13px; color:var(--txt2); max-width:280px; line-height:1.5;}
+
+  @media(prefers-color-scheme:dark){
+    :root{--bg:#11160f; --card:#1b2118; --linha:#2c3526; --txt:#e9f0e3; --txt2:#a6b29c; --txt3:#7a8670; --chip:#243019; --chip-ic:#97C459;}
+    .visor iframe{background:#0f1115;}
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== TELA INICIAL ===== -->
+<div id="inicio">
+  <div class="topo">
+    <div class="topo-row">
+      <div class="logo"><b>G</b><span class="lf"></span></div>
+      <div>
+        <h1>Garcia Agro</h1>
+        <div class="s">Recuperação Judicial · Monitoramento</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="saudacao">
+    <h2>Bem-vindo, Agente Judicial</h2>
+    <p>Selecione um módulo para começar.</p>
+  </div>
+
+  <div class="grade">
+    <button class="mod pronto" onclick="abrirIframe('Extratos bancários','https://leniohp.github.io/extratos-garcia/')">
+      <div class="ic"><svg fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11M8 14v3M12 14v3M16 14v3"/></svg></div>
+      <div class="nm">Extratos bancários</div>
+      <div class="ds">Movimentações das contas</div>
+      <div class="tag">● Disponível</div>
+    </button>
+
+    <button class="mod" onclick="abrirObra('Pagamentos')">
+      <div class="ic"><svg fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M7 15h2"/></svg></div>
+      <div class="nm">Pagamentos</div>
+      <div class="ds">Comprovantes e quitações</div>
+      <div class="tag">○ Em breve</div>
+    </button>
+
+    <button class="mod" onclick="abrirObra('Contratos')">
+      <div class="ic"><svg fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z"/><path d="M9 12h6M9 16h6"/></svg></div>
+      <div class="nm">Contratos</div>
+      <div class="ds">Documentos do grupo</div>
+      <div class="tag">○ Em breve</div>
+    </button>
+
+    <button class="mod" onclick="abrirObra('Solicitações RMA')">
+      <div class="ic"><svg fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 7h6M9 11h6M9 15h4"/></svg></div>
+      <div class="nm">Solicitações RMA</div>
+      <div class="ds">Lista de solicitações</div>
+      <div class="tag">○ Em breve</div>
+    </button>
+  </div>
+
+  <div class="rodape">
+    <div class="l">
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M12 3l7 4v5c0 4-3 7-7 9-4-2-7-5-7-9V7z"/><path d="M9 12l2 2 4-4"/></svg>
+      Processo nº 1013776-24.2024.8.11.0003
+    </div>
+  </div>
+</div>
+
+<!-- ===== VISUALIZADOR ===== -->
+<div class="visor" id="visor">
+  <div class="visor-topo">
+    <button class="voltar" onclick="fechar()">
+      <svg fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
+      Voltar
+    </button>
+    <span class="visor-titulo" id="vtitulo"></span>
+    <span class="visor-acao" id="vacao"></span>
+  </div>
+  <div id="vcorpo" style="flex:1; display:flex; flex-direction:column;"></div>
+</div>
+
+<script>
+const visor = document.getElementById('visor');
+const vtitulo = document.getElementById('vtitulo');
+const vcorpo = document.getElementById('vcorpo');
+const vacao = document.getElementById('vacao');
+
+function abrirIframe(titulo, url){
+  vtitulo.textContent = titulo;
+  vacao.innerHTML = '<a href="'+url+'" target="_blank" rel="noopener">Tela cheia <svg fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M15 3h6v6M10 14L21 3M21 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5"/></svg></a>';
+  vcorpo.innerHTML = '<iframe src="'+url+'" allow="clipboard-read; clipboard-write"></iframe>';
+  visor.classList.add('aberto');
+  history.pushState({visor:true}, '');
+}
+
+function abrirObra(titulo){
+  vtitulo.textContent = titulo;
+  vacao.innerHTML = '';
+  vcorpo.innerHTML = '<div class="obra">'
+    + '<div class="big"><svg fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 2"/></svg></div>'
+    + '<h3>Em construção</h3>'
+    + '<p>O conteúdo do módulo <b>'+titulo+'</b> ainda será definido. Em breve estará disponível aqui dentro do app.</p>'
+    + '</div>';
+  visor.classList.add('aberto');
+  history.pushState({visor:true}, '');
+}
+
+function fechar(){
+  visor.classList.remove('aberto');
+  setTimeout(()=>{ vcorpo.innerHTML=''; }, 280);
+}
+
+// botão "voltar" do celular fecha o visor em vez de sair do app
+window.addEventListener('popstate', ()=>{
+  if(visor.classList.contains('aberto')) fechar();
+});
+
+// registra o service worker (PWA)
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=> navigator.serviceWorker.register('sw.js').catch(()=>{}));
+}
+</script>
+</body>
+</html>
