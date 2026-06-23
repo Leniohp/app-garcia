@@ -99,8 +99,33 @@
 
   .carregando{min-height:100dvh; display:flex; align-items:center; justify-content:center; font-size:13px; color:var(--txt2);}
 
+  .admin-ico{margin-left:auto; background:rgba(255,255,255,.15); border:0; color:#fff; width:36px; height:36px; border-radius:9px; display:flex; align-items:center; justify-content:center; cursor:pointer;}
+  .admin-ico svg{width:19px; height:19px; stroke:#fff;}
+  .admin-ico + .sair{margin-left:8px;}
+
+  .modal{position:fixed; inset:0; background:rgba(0,0,0,.5); display:none; align-items:center; justify-content:center; z-index:60; padding:18px;}
+  .modal.on{display:flex;}
+  .modal-card{background:var(--card); border:0.5px solid var(--linha); border-radius:16px; width:min(440px,96vw); max-height:86vh; overflow:auto;}
+  .modal-card h3{font-size:16px; font-weight:600; color:var(--txt); padding:18px 20px; border-bottom:0.5px solid var(--linha); display:flex; align-items:center; justify-content:space-between;}
+  .modal-card h3 .x{cursor:pointer; color:var(--txt2); font-size:22px; line-height:1; background:none; border:0;}
+  .modal-body{padding:16px 20px;}
+  .ucard{display:flex; justify-content:space-between; align-items:center; gap:10px; padding:12px; border:0.5px solid var(--linha); border-radius:11px; margin-bottom:10px;}
+  .ucard .em{font-size:13px; font-weight:500; color:var(--txt); word-break:break-all;}
+  .ucard .st{font-size:11px; padding:2px 9px; border-radius:20px; display:inline-block; margin-top:4px;}
+  .st.pend{background:#FAEEDA; color:#854F0B;}
+  .st.apr{background:#e7f3df; color:#3b6d11;}
+  .st.rej{background:#fbeaea; color:#a32d2d;}
+  .ucard .acoes{display:flex; gap:7px; flex-shrink:0;}
+  .ucard button{font-size:12px; padding:7px 12px; border-radius:8px; border:0.5px solid var(--linha); background:transparent; cursor:pointer; font-family:inherit; color:var(--txt);}
+  .ucard button.apr{border-color:#3b6d11; color:#3b6d11;}
+  .ucard button.rej{border-color:#a32d2d; color:#a32d2d;}
+  .modal-vazio{text-align:center; color:var(--txt2); font-size:13px; padding:30px;}
+
   @media(prefers-color-scheme:dark){
     :root{--bg:#11160f; --card:#1b2118; --linha:#2c3526; --txt:#e9f0e3; --txt2:#a6b29c; --txt3:#7a8670; --chip:#243019; --chip-ic:#97C459; --erro-bg:#2e1a1a; --erro:#f0a0a0; --ok-bg:#1c2914; --ok:#9fd96a;}
+    .st.pend{background:#3a2f1f; color:#FAC775;}
+    .st.apr{background:#1c2914; color:#9fd96a;}
+    .st.rej{background:#2e1a1a; color:#f0a0a0;}
   }
 </style>
 </head>
@@ -138,6 +163,9 @@
         <h1>Garcia Agro</h1>
         <div class="s">Recuperação Judicial · Monitoramento</div>
       </div>
+      <button class="admin-ico" id="adminIco" onclick="abrirAdmin()" title="Gerenciar acesso" aria-label="Gerenciar acesso" style="display:none">
+        <svg fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      </button>
       <button class="sair" onclick="sair()">Sair</button>
     </div>
   </div>
@@ -182,6 +210,14 @@
       <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M12 3l7 4v5c0 4-3 7-7 9-4-2-7-5-7-9V7z"/><path d="M9 12l2 2 4-4"/></svg>
       Processo nº 1013776-24.2024.8.11.0003
     </div>
+  </div>
+</div>
+
+<!-- ===== MODAL ADMIN (gerenciar acesso) ===== -->
+<div class="modal" id="adminModal">
+  <div class="modal-card">
+    <h3>Gerenciar acesso <button class="x" onclick="fecharAdmin()" aria-label="Fechar">&times;</button></h3>
+    <div class="modal-body" id="adminBody"><div class="modal-vazio">Carregando…</div></div>
   </div>
 </div>
 
@@ -266,6 +302,7 @@ async function checarSessao(){
     if(!session){ resolvido=true; clearTimeout(guarda); verLogin(); return; }
     const user = session.user;
     const isAdmin = user.email === ADMIN_EMAIL;
+    window.__isAdmin = isAdmin;
     const {data:perfil} = await sb.from("perfis").select("status").eq("id",user.id).maybeSingle();
     const status = perfil ? perfil.status : "pendente";
     resolvido=true; clearTimeout(guarda);
@@ -283,7 +320,41 @@ async function checarSessao(){
 }
 
 function verLogin(){ splash.style.display="none"; telaApp.style.display="none"; telaLogin.style.display="flex"; }
-function verApp(){ splash.style.display="none"; telaLogin.style.display="none"; telaApp.style.display="block"; }
+function verApp(){
+  splash.style.display="none"; telaLogin.style.display="none"; telaApp.style.display="block";
+  if(window.__isAdmin) document.getElementById("adminIco").style.display="flex";
+}
+
+/* ===== ADMIN: gerenciar acesso ===== */
+const adminModal = document.getElementById("adminModal");
+const adminBody = document.getElementById("adminBody");
+
+async function abrirAdmin(){
+  adminModal.classList.add("on");
+  adminBody.innerHTML = '<div class="modal-vazio">Carregando…</div>';
+  try{
+    const {data,error} = await sb.from("perfis").select("*").order("created_at",{ascending:false});
+    if(error) throw error;
+    if(!data || !data.length){ adminBody.innerHTML = '<div class="modal-vazio">Nenhum usuário cadastrado ainda.</div>'; return; }
+    adminBody.innerHTML = data.map(u=>{
+      const cls = u.status==="aprovado" ? "apr" : u.status==="recusado" ? "rej" : "pend";
+      const txt = u.status==="aprovado" ? "Aprovado" : u.status==="recusado" ? "Recusado" : "Pendente";
+      return '<div class="ucard"><div><div class="em">'+(u.email||u.id)+'</div><span class="st '+cls+'">'+txt+'</span></div>'
+        + '<div class="acoes"><button class="apr" onclick="defStatus(\''+u.id+'\',\'aprovado\')">Aprovar</button>'
+        + '<button class="rej" onclick="defStatus(\''+u.id+'\',\'recusado\')">Recusar</button></div></div>';
+    }).join("");
+  }catch(e){
+    adminBody.innerHTML = '<div class="modal-vazio">Erro ao carregar: '+e.message+'</div>';
+  }
+}
+function fecharAdmin(){ adminModal.classList.remove("on"); }
+async function defStatus(id, status){
+  try{
+    const {error} = await sb.from("perfis").update({status}).eq("id",id);
+    if(error) throw error;
+    abrirAdmin();
+  }catch(e){ alert("Erro: "+e.message); }
+}
 
 /* ===== VISOR (módulos) ===== */
 const visor = document.getElementById('visor');
