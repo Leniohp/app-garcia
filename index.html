@@ -35,6 +35,15 @@
   #login input{width:100%; padding:13px 14px; border:1px solid #d3dac9; border-radius:11px; font-size:14px; margin-bottom:11px; background:#fbfaf7; color:#173404; font-family:inherit;}
   #login input::placeholder{color:#9aa392;}
   #login input:focus{outline:none; border-color:var(--verde2); box-shadow:0 0 0 3px rgba(46,139,79,.12);}
+  #login input:-webkit-autofill,
+  #login input:-webkit-autofill:hover,
+  #login input:-webkit-autofill:focus{
+    -webkit-text-fill-color:#173404 !important;
+    -webkit-box-shadow:0 0 0 1000px #fbfaf7 inset !important;
+    box-shadow:0 0 0 1000px #fbfaf7 inset !important;
+    caret-color:#173404;
+    transition:background-color 9999s ease-in-out 0s;
+  }
   .btn-entrar{width:100%; padding:14px; border:0; border-radius:11px; background:var(--verde); color:#fff; font-size:14px; font-weight:600; cursor:pointer; font-family:inherit; margin-top:4px;}
   .btn-entrar:disabled{opacity:.6; cursor:default;}
   .aviso{font-size:12.5px; margin-top:13px; padding:10px 12px; border-radius:9px; display:none; line-height:1.4;}
@@ -92,7 +101,6 @@
 
   @media(prefers-color-scheme:dark){
     :root{--bg:#11160f; --card:#1b2118; --linha:#2c3526; --txt:#e9f0e3; --txt2:#a6b29c; --txt3:#7a8670; --chip:#243019; --chip-ic:#97C459; --erro-bg:#2e1a1a; --erro:#f0a0a0; --ok-bg:#1c2914; --ok:#9fd96a;}
-    #login input{background:#141a10;}
   }
 </style>
 </head>
