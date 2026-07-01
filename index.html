@@ -363,9 +363,11 @@ const vcorpo = document.getElementById('vcorpo');
 const vacao = document.getElementById('vacao');
 
 function abrirIframe(titulo, url){
+  const sep = url.indexOf('?') === -1 ? '?' : '&';
+  const urlv = url + sep + 'v=' + Date.now();
   vtitulo.textContent = titulo;
-  vacao.innerHTML = '<a href="'+url+'" target="_blank" rel="noopener">Tela cheia <svg fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M15 3h6v6M10 14L21 3M21 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5"/></svg></a>';
-  vcorpo.innerHTML = '<iframe src="'+url+'" allow="clipboard-read; clipboard-write"></iframe>';
+  vacao.innerHTML = '<a href="'+urlv+'" target="_blank" rel="noopener">Tela cheia <svg fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M15 3h6v6M10 14L21 3M21 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5"/></svg></a>';
+  vcorpo.innerHTML = '<iframe src="'+urlv+'" allow="clipboard-read; clipboard-write"></iframe>';
   visor.classList.add('aberto');
   history.pushState({visor:true}, '');
 }
