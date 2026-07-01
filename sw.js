@@ -1,4 +1,4 @@
-const CACHE = 'garcia-agro-v2';
+const CACHE = 'garcia-agro-v3';
 const ARQUIVOS = [
   './',
   './index.html',
